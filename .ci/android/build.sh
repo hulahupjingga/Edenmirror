@@ -118,9 +118,11 @@ else
     NIGHTLY=false
 fi
 
+
 echo "-- building..."
 
-./gradlew "copy${FLAVOR}${TYPE}Outputs" \
+# 1. Force AGP to strictly compile the standalone APK
+./gradlew "assemble${FLAVOR}${TYPE}" \
     -Dorg.gradle.caching="${CCACHE}" \
     -Dorg.gradle.parallel="${CCACHE}" \
     -Dorg.gradle.workers.max="${NUM_JOBS}" \
@@ -128,10 +130,14 @@ echo "-- building..."
     -Pnightly="$NIGHTLY" \
     --info
 
+# 2. Replicate the script's cleanup behavior by finding and moving the APK file
+mkdir -p "${ARTIFACTS_DIR}"
+find . -type f -name "*.apk" -exec cp {} "${ARTIFACTS_DIR}/" \;
+
 if [ -n "${ANDROID_KEYSTORE_B64}" ]; then
     rm "${ANDROID_KEYSTORE_FILE}"
 fi
 
-echo "-- Done! APK and AAB artifacts are in ${ARTIFACTS_DIR}"
+echo "-- Done! APK artifacts are in ${ARTIFACTS_DIR}"
 
 ls -l "${ARTIFACTS_DIR}/"
