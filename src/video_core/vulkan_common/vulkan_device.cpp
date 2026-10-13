@@ -1045,6 +1045,14 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     FOR_EACH_VK_FEATURE_EXT(FEATURE_EXTENSION);
     FOR_EACH_VK_EXTENSION(EXTENSION);
+    
+    // Frame generation eg: lsfg needs shaderFloat16. It is core only from Vulkan 1.2 and its feature entry sits
+    // in the 1.1 group, which the loading code above never turns into an extension, so enable it here.
+    if (instance_version < VK_API_VERSION_1_2 &&
+        supported_extensions.contains(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+        loaded_extensions.insert(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
+        extensions.shader_float16_int8 = true;
+    }
 
     extensions.depth_stencil_resolve =
         extensions.depth_stencil_resolve &&
